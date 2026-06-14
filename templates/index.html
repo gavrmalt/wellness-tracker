@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wellness Tracker — Μήνας 1</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #f8f8f7;
+    --bg2: #ffffff;
+    --text: #1a1a1a;
+    --text2: #6b6b6b;
+    --border: #e5e5e5;
+    --green: #1D9E75;
+    --yellow: #EF9F27;
+    --radius: 10px;
+  }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+  .container { max-width: 720px; margin: 0 auto; padding: 2rem 1rem; }
+  h1 { font-size: 22px; font-weight: 600; margin-bottom: 4px; }
+  .subtitle { font-size: 14px; color: var(--text2); margin-bottom: 1.5rem; }
+
+  /* Week tabs */
+  .weeks { display: flex; gap: 8px; margin-bottom: 1.5rem; flex-wrap: wrap; }
+  .week-btn { font-size: 13px; padding: 6px 16px; border-radius: 99px; border: 1px solid var(--border); background: var(--bg2); color: var(--text2); cursor: pointer; transition: all 0.15s; }
+  .week-btn:hover { border-color: #aaa; }
+  .week-btn.active { background: var(--text); color: #fff; border-color: var(--text); }
+
+  /* Metrics */
+  .metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin-bottom: 1.5rem; }
+  .metric { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; }
+  .metric-label { font-size: 12px; color: var(--text2); margin-bottom: 6px; }
+  .metric-val { font-size: 24px; font-weight: 600; }
+  .metric-sub { font-size: 12px; color: var(--text2); margin-top: 2px; }
+
+  /* Section */
+  .section { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; margin-bottom: 1rem; }
+  .section-title { font-size: 14px; font-weight: 600; margin-bottom: 12px; }
+
+  /* Checklist */
+  .check-item { display: flex; align-items: center; gap: 10px; padding: 9px 0; border-bottom: 1px solid var(--border); }
+  .check-item:last-child { border-bottom: none; padding-bottom: 0; }
+  .check-item input[type=checkbox] { width: 17px; height: 17px; cursor: pointer; accent-color: var(--green); flex-shrink: 0; }
+  .check-item label { font-size: 14px; cursor: pointer; flex: 1; }
+  .check-item.done label { color: var(--text2); text-decoration: line-through; }
+  .badge { font-size: 11px; padding: 2px 8px; border-radius: 99px; background: var(--bg); color: var(--text2); border: 1px solid var(--border); flex-shrink: 0; }
+
+  /* Progress */
+  .progress-wrap { margin-top: 12px; }
+  .progress-bar { height: 5px; background: var(--bg); border-radius: 99px; overflow: hidden; }
+  .progress-fill { height: 100%; background: var(--green); border-radius: 99px; transition: width 0.3s; }
+  .progress-label { font-size: 12px; color: var(--text2); margin-top: 5px; text-align: right; }
+
+  /* Symptoms */
+  .symptom-row { display: flex; align-items: center; gap: 12px; padding: 7px 0; border-bottom: 1px solid var(--border); }
+  .symptom-row:last-child { border-bottom: none; }
+  .symptom-label { font-size: 13px; color: var(--text2); width: 150px; flex-shrink: 0; }
+  .stars { display: flex; gap: 5px; }
+  .star { font-size: 22px; cursor: pointer; color: var(--border); transition: color 0.1s; user-select: none; }
+  .star.on { color: var(--yellow); }
+
+  /* Notes */
+  textarea { width: 100%; min-height: 80px; font-size: 14px; font-family: inherit; padding: 10px 12px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg); color: var(--text); resize: vertical; }
+  textarea:focus { outline: none; border-color: #aaa; }
+
+  /* Buttons */
+  .btn { padding: 9px 22px; font-size: 14px; font-weight: 500; border-radius: var(--radius); border: none; cursor: pointer; transition: all 0.15s; }
+  .btn-primary { background: var(--text); color: #fff; }
+  .btn-primary:hover { opacity: 0.85; }
+  .btn-row { display: flex; gap: 8px; margin-top: 10px; }
+
+  /* Log */
+  .log-entry { padding: 10px 0; border-bottom: 1px solid var(--border); }
+  .log-entry:last-child { border-bottom: none; }
+  .log-date { font-size: 13px; font-weight: 600; margin-bottom: 3px; }
+  .log-meta { font-size: 13px; color: var(--text2); }
+  .log-notes { font-size: 13px; color: var(--text2); margin-top: 3px; font-style: italic; }
+  .empty { font-size: 13px; color: var(--text2); text-align: center; padding: 20px 0; }
+
+  /* Toast */
+  .toast { position: fixed; bottom: 24px; right: 24px; background: var(--text); color: #fff; padding: 10px 18px; border-radius: var(--radius); font-size: 14px; opacity: 0; transition: opacity 0.2s; pointer-events: none; z-index: 999; }
+  .toast.show { opacity: 1; }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>🌿 Wellness Tracker</h1>
+  <p class="subtitle" id="date-range">Φορτώνω...</p>
+
+  <div class="weeks" id="week-tabs"></div>
+
+  <div class="metrics" id="metrics"></div>
+
+  <div class="section">
+    <div class="section-title">Στόχοι σήμερα</div>
+    <div id="checklist"></div>
+    <div class="progress-wrap">
+      <div class="progress-bar"><div class="progress-fill" id="progress" style="width:0%"></div></div>
+      <div class="progress-label" id="progress-label">0 / 8</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Πώς νιώθω σήμερα</div>
+    <div id="symptoms"></div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Σημειώσεις</div>
+    <textarea id="notes" placeholder="Πόνος, ύπνος, ενέργεια, οτιδήποτε..."></textarea>
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="saveDay()">Αποθήκευση</button>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Ιστορικό εβδομάδας</div>
+    <div id="log"><div class="empty">Φορτώνω...</div></div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const GOALS = [
+  { id:'water',     label:'Νερό πρωί πριν καφέ',      badge:'πρωινό'   },
+  { id:'breakfast', label:'Φαγητό πριν τον καφέ',      badge:'ρουτίνα'  },
+  { id:'coffee',    label:'Μέγιστο 2 καφέδες',          badge:'καφές'    },
+  { id:'stretch',   label:'Διατάσεις / posture 10λ',    badge:'σώμα'     },
+  { id:'exercise',  label:'Γυμναστική χωρίς άγχος',     badge:'σώμα'     },
+  { id:'sleep',     label:'Ύπνος σε σταθερή ώρα',       badge:'ύπνος'    },
+  { id:'supps',     label:'Συμπληρώματα (Mg, C, D3)',   badge:'συμπλ.'   },
+  { id:'massage',   label:'Μασάζ / φυσιοθεραπεία',      badge:'θεραπεία' },
+];
+const SYMPTOMS = [
+  { id:'pain',    label:'Πόνος στήθος'   },
+  { id:'breath',  label:'Δύσπνοια'       },
+  { id:'tachy',   label:'Ταχυκαρδία'     },
+  { id:'energy',  label:'Ενέργεια'       },
+  { id:'sleep_q', label:'Ποιότητα ύπνου' },
+];
+
+let currentWeek = 0;
+let weekData = [];
+let symRatings = {};
+let todayChecks = {};
+
+function getMonday(offset = 0) {
+  const d = new Date(); d.setHours(0,0,0,0);
+  const day = d.getDay(), diff = (day === 0 ? -6 : 1 - day);
+  d.setDate(d.getDate() + diff + offset * 7);
+  return d;
+}
+function fmtDate(d) { return d.toISOString().split('T')[0]; }
+function fmtDisplay(d) { return new Date(d + 'T00:00:00').toLocaleDateString('el-GR', {weekday:'short',day:'numeric',month:'short'}); }
+function todayKey() { return fmtDate(new Date()); }
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2000);
+}
+
+async function fetchWeek(offset) {
+  const start = fmtDate(getMonday(offset));
+  const res = await fetch(`/api/week/${start}`);
+  return await res.json();
+}
+
+async function saveDayAPI(date, data) {
+  await fetch(`/api/day/${date}`, {
+    method: 'POST', headers: {'Content-Type':'application/json'},
+    body: JSON.stringify(data)
+  });
+}
+
+// ── Render ─────────────────────────────────────────────────
+function renderTabs() {
+  const tabs = document.getElementById('week-tabs');
+  tabs.innerHTML = '';
+  for (let w = 0; w <= 3; w++) {
+    const mon = getMonday(w);
+    const sun = new Date(mon); sun.setDate(mon.getDate() + 6);
+    const lbl = `Εβδ. ${w+1}`;
+    const btn = document.createElement('button');
+    btn.className = 'week-btn' + (w === currentWeek ? ' active' : '');
+    btn.textContent = lbl;
+    btn.onclick = () => { currentWeek = w; init(); };
+    tabs.appendChild(btn);
+  }
+}
+
+function renderDateRange() {
+  const mon = getMonday(currentWeek);
+  const sun = new Date(mon); sun.setDate(mon.getDate() + 6);
+  const fmt = d => d.toLocaleDateString('el-GR', {day:'numeric', month:'long'});
+  document.getElementById('date-range').textContent = fmt(mon) + ' – ' + fmt(sun);
+}
+
+function renderMetrics() {
+  let checked = 0, total = 0, logged = 0, pains = [], energies = [];
+  weekData.forEach(d => {
+    total += GOALS.length;
+    const hasEntry = Object.keys(d.checks).length > 0 || Object.keys(d.symptoms).length > 0 || d.notes;
+    if (hasEntry) logged++;
+    GOALS.forEach(g => { if (d.checks[g.id]) checked++; });
+    if (d.symptoms.pain) pains.push(d.symptoms.pain);
+    if (d.symptoms.energy) energies.push(d.symptoms.energy);
+  });
+  const pct = total > 0 ? Math.round(checked / total * 100) : 0;
+  const mp = pains.length ? (pains.reduce((a,b)=>a+b,0)/pains.length).toFixed(1) : '—';
+  const me = energies.length ? (energies.reduce((a,b)=>a+b,0)/energies.length).toFixed(1) : '—';
+  document.getElementById('metrics').innerHTML = `
+    <div class="metric"><div class="metric-label">Στόχοι εβδομάδας</div><div class="metric-val">${pct}%</div><div class="metric-sub">${checked}/${total}</div></div>
+    <div class="metric"><div class="metric-label">Μέρες καταγραφής</div><div class="metric-val">${logged}/7</div><div class="metric-sub">αυτή την εβδομάδα</div></div>
+    <div class="metric"><div class="metric-label">Μέσος πόνος</div><div class="metric-val">${mp}</div><div class="metric-sub">από 5 ★</div></div>
+    <div class="metric"><div class="metric-label">Μέση ενέργεια</div><div class="metric-val">${me}</div><div class="metric-sub">από 5 ★</div></div>`;
+}
+
+function renderChecklist() {
+  const today = weekData.find(d => d.date === todayKey()) || {checks:{}};
+  todayChecks = {...today.checks};
+  const el = document.getElementById('checklist');
+  el.innerHTML = '';
+  GOALS.forEach(g => {
+    const item = document.createElement('div');
+    item.className = 'check-item' + (todayChecks[g.id] ? ' done' : '');
+    item.innerHTML = `<input type="checkbox" id="c_${g.id}" ${todayChecks[g.id]?'checked':''}><label for="c_${g.id}">${g.label}</label><span class="badge">${g.badge}</span>`;
+    item.querySelector('input').onchange = e => {
+      todayChecks[g.id] = e.target.checked;
+      item.classList.toggle('done', e.target.checked);
+      updateProgress();
+    };
+    el.appendChild(item);
+  });
+  updateProgress();
+}
+
+function updateProgress() {
+  const done = GOALS.filter(g => todayChecks[g.id]).length;
+  const pct = Math.round(done / GOALS.length * 100);
+  document.getElementById('progress').style.width = pct + '%';
+  document.getElementById('progress-label').textContent = `${done} / ${GOALS.length}`;
+}
+
+function renderSymptoms() {
+  const today = weekData.find(d => d.date === todayKey()) || {symptoms:{}};
+  symRatings = {...today.symptoms};
+  const el = document.getElementById('symptoms');
+  el.innerHTML = '';
+  SYMPTOMS.forEach(s => {
+    const row = document.createElement('div'); row.className = 'symptom-row';
+    const stars = document.createElement('div'); stars.className = 'stars'; stars.id = 'stars_' + s.id;
+    for (let i = 1; i <= 5; i++) {
+      const sp = document.createElement('span');
+      sp.className = 'star' + (symRatings[s.id] >= i ? ' on' : '');
+      sp.textContent = '★';
+      sp.onclick = () => { symRatings[s.id] = i; updateStars(s.id); };
+      stars.appendChild(sp);
+    }
+    row.innerHTML = `<span class="symptom-label">${s.label}</span>`;
+    row.appendChild(stars);
+    el.appendChild(row);
+  });
+}
+
+function updateStars(sid) {
+  document.querySelectorAll(`#stars_${sid} .star`).forEach((s,i) => s.classList.toggle('on', symRatings[sid] >= i+1));
+}
+
+function renderNotes() {
+  const today = weekData.find(d => d.date === todayKey()) || {notes:''};
+  document.getElementById('notes').value = today.notes || '';
+}
+
+function renderLog() {
+  const el = document.getElementById('log');
+  const entries = [...weekData].filter(d => {
+    return Object.keys(d.checks).length > 0 || Object.keys(d.symptoms).length > 0 || d.notes;
+  }).reverse();
+  if (!entries.length) { el.innerHTML = '<div class="empty">Δεν υπάρχουν καταγραφές ακόμα</div>'; return; }
+  el.innerHTML = '';
+  entries.forEach(d => {
+    const done = GOALS.filter(g => d.checks[g.id]).length;
+    const painTxt = d.symptoms.pain ? ` · πόνος ${d.symptoms.pain}/5` : '';
+    const energyTxt = d.symptoms.energy ? ` · ενέργεια ${d.symptoms.energy}/5` : '';
+    const div = document.createElement('div'); div.className = 'log-entry';
+    div.innerHTML = `
+      <div class="log-date">${fmtDisplay(d.date)}</div>
+      <div class="log-meta">${done}/${GOALS.length} στόχοι${painTxt}${energyTxt}</div>
+      ${d.notes ? `<div class="log-notes">${d.notes.substring(0,120)}${d.notes.length>120?'...':''}</div>` : ''}`;
+    el.appendChild(div);
+  });
+}
+
+async function saveDay() {
+  const today = todayKey();
+  await saveDayAPI(today, {
+    checks: todayChecks,
+    symptoms: symRatings,
+    notes: document.getElementById('notes').value
+  });
+  // refresh week data
+  weekData = await fetchWeek(currentWeek);
+  renderMetrics();
+  renderLog();
+  showToast('✓ Αποθηκεύτηκε!');
+}
+
+async function init() {
+  renderTabs();
+  renderDateRange();
+  weekData = await fetchWeek(currentWeek);
+  renderMetrics();
+  renderChecklist();
+  renderSymptoms();
+  renderNotes();
+  renderLog();
+}
+
+init();
+</script>
+</body>
+</html>

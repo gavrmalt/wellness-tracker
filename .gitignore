@@ -1,0 +1,14 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# Database (τα data μένουν τοπικά)
+*.db
+
+# Virtual environment
+venv/
+.env
+
+# pytest
+.pytest_cache/
