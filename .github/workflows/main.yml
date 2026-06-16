@@ -9,6 +9,23 @@ on:
     branches: [ master ]
 
 jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Lint with flake8
+        run: flake8 . --max-line-length=120 --exclude=.git,__pycache__ --ignore=E302,E303,E305,W292,F401,E401,E712
+
   test:
     runs-on: ubuntu-latest
 
@@ -24,11 +41,6 @@ jobs:
       - name: Install dependencies
         run: |
           pip install -r requirements.txt
-
-      - name: Lint with flake8
-        run: |
-          flake8 . --max-line-length=120 --exclude=.git,__pycache__ --ignore=E302,E303,E305,W292,F401,E401,E712
-
 
       - name: Run tests
         run: |
