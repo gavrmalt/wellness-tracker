@@ -1,38 +1,45 @@
 # 🌿 Wellness Tracker
 
-Προσωπικό tracker για τον Μήνα 1 του προγράμματος υγείας.
+Personal tracker for Month 1 of a health program.
 
-## Εγκατάσταση
+## Requirements
+
+- Python 3.9+
+- pip
+- (optional) Docker, if running containerized
+- (optional) Helm + a running Kubernetes cluster (minikube), if deploying to K8s
+
+## Installation
 
 ```bash
-# 1. Εγκατάσταση Flask
+# 1. Install dependencies
 pip install -r requirements.txt
 
-# 2. Εκκίνηση
+# 2. Run
 python app.py
 ```
 
-## Χρήση
+## Usage
 
-Άνοιξε τον browser στο: **http://localhost:5000**
+Open your browser at: **http://localhost:5000**
 
-Τα δεδομένα αποθηκεύονται τοπικά στο αρχείο `wellness.db` (SQLite).
+Data is stored locally in the `wellness.db` file (SQLite).
 
-## Στόχοι που παρακολουθούνται
+## Tracked goals
 
-- Νερό πρωί πριν καφέ
-- Φαγητό πριν τον καφέ
-- Μέγιστο 2 καφέδες
-- Διατάσεις / posture 10λ
-- Γυμναστική χωρίς άγχος
-- Ύπνος σε σταθερή ώρα
-- Συμπληρώματα (Mg, C, D3)
-- Μασάζ / φυσιοθεραπεία
+- Water in the morning before coffee
+- Food before coffee
+- Max 2 coffees
+- Stretching / posture, 10 min
+- Exercise without stress
+- Sleep at a consistent time
+- Supplements (Mg, C, D3)
+- Massage / physiotherapy
 
-## Συμπτώματα που παρακολουθούνται (1-5 ★)
+## Tracked symptoms (1–5 ★)
 
-- Πόνος στήθος
-- Δύσπνοια
-- Ταχυκαρδία
-- Ενέργεια
-- Ποιότητα ύπνου
+- Chest pain
+- Shortness of breath
+- Tachycardia
+- Energy
+- Sleep quality
