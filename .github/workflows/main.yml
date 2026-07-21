@@ -72,5 +72,5 @@ jobs:
         with:
           image-ref: 'gavrmalt/wellness-app:${{ github.ref_name }}'
           format: 'table'
-          exit-code: '0'
+          exit-code: '1'
           severity: 'CRITICAL,HIGH'
